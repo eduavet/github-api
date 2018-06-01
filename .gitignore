@@ -1,0 +1,22 @@
+# Logs
+logs
+*.log
+
+# Dependency directory
+node_modules
+*/node_modules
+
+.DS_Store
+.monitor
+
+##LSQ-local
+.pins.json
+.config.json
+.consul
+
+*/files/*.csv
+*/package-lock.json
+
+service-user/package-lock.json
+
+.env
