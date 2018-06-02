@@ -31,11 +31,40 @@ routes.push({
 });
 
 routes.push({
-  method: 'GET',
+  method: 'POST',
   path: '/github/repo-branches',
   config: {
     tags: ['api', 'mut', 'github'],
     handler: Api.github.repoBranches,
+    validate: {
+      payload: {
+        repo: Joi.string(),
+      }
+    }
+  },
+});
+
+routes.push({
+  method: 'POST',
+  path: '/github/repo-download',
+  config: {
+    tags: ['api', 'mut', 'github'],
+    handler: Api.github.repoDownload,
+    validate: {
+      payload: {
+        username: Joi.string(),
+        repo: Joi.string(),
+      }
+    }
+  },
+});
+
+routes.push({
+  method: 'GET',
+  path: '/github/organizations',
+  config: {
+    tags: ['api', 'mut', 'github'],
+    handler: Api.github.organizations,
   },
 });
 
@@ -45,6 +74,13 @@ routes.push({
   config: {
     tags: ['api', 'mut', 'github'],
     handler: Api.github.createHook,
+    validate: {
+      payload: {
+        username: Joi.string(),
+        repo: Joi.string(),
+        url: Joi.string(),
+      },
+    },
   },
 });
 

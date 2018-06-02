@@ -4,6 +4,7 @@
   "dependencies": {
     "boom": "^4.3.1",
     "dotenv": "^5.0.1",
+    "download": "^7.0.0",
     "graphql-request": "^1.6.0",
     "hapi": "^16.1.1",
     "hapi-swagger": "^7.7.0",

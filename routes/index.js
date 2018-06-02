@@ -1,5 +1,7 @@
+const github = require('./github');
+
 let routes = [
-  require('./github'),
+  github
 ]
 
-module.exports = [].concat(...routes)
+module.exports = routes;

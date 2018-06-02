@@ -1,5 +1,8 @@
+const fs = require('fs');
 const fetch = require('node-fetch');
 const { request, GraphQLClient } =  require('graphql-request');
+const download = require('download');
+const Utils = require('../utils/githubUtils.js');
 
 const API_URL = 'https://api.github.com/graphql';
 const Github = {}
@@ -36,33 +39,46 @@ Github.code = (request, reply) => {
 }
 
 Github.repos = (request, reply) => {
-  return getRepos(process.env.TOKEN, reply);
+  return Utils.getRepos(process.env.TOKEN, reply);
 }
 
 Github.repoBranches = (request, reply) => {
-  const repo = "Reaction-game";
-  return getBranches(process.env.TOKEN, repo, reply);
+  const { repo } = request.payload;
+  return Utils.getBranches(process.env.TOKEN, repo, reply);
+}
+
+Github.repoDownload = (request, reply) => {
+  const { username, repo } = request.payload;
+  const url = `https://api.github.com/repos/${username}/${repo}/tarball`
+  return download(url, 'downloads')
+    .then(() => reply('downloaded'))
+    .catch(console.error);
+}
+
+Github.organizations = (request, reply) => {
+  return Utils.getOrgs(process.env.TOKEN, reply);
 }
 
 Github.createHook = (request, reply) => {
+  const { username, repo, url } = request.payload;
   const body = {
     "name": "web",
     "config": {
-      "url": "http://testing-heroku-mut.herokuapp.com/receive",
+      "url": url,
       "content_type": "json"
     }
   };
 
-  fetch(`https://api.github.com/repos/eduavet/empty-repo-3/hooks`, {
+  fetch(`https://api.github.com/repos/${username}/${repo}/hooks`, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
       'Authorization': `Bearer ${process.env.TOKEN}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     }
   })
-    .then(console.log)
-    // .then(reply)
+    .then(response => response.json())
+    .then(reply)
     .catch(console.error);
 }
 
@@ -83,81 +99,6 @@ Github.deleteHook = (request, reply) => {
       } else reply(response);
     })
     .catch(console.error);
-}
-
-const getRepos = (accessToken, reply) => {
-  const client = new GraphQLClient(API_URL, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-
-  const repos = [];
-
-  const fetchPages = (endCursor) => {
-    const query = `{
-      viewer {
-        repositories(first: 30${endCursor ? `, after: "${endCursor}"` : '' }, affiliations: OWNER) {
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-          edges {
-            node {
-              name
-              id
-            }
-          }
-        }
-      }
-    }`;
-
-    client.request(query)
-      .then(data => {
-        const { edges } = data.viewer.repositories;
-        const { hasNextPage } = data.viewer.repositories.pageInfo;
-        edges.forEach(edge => repos.push(edge.node));
-        if (!hasNextPage) {
-          reply({repos});
-        } else {
-          fetchPages(data.viewer.repositories.pageInfo.endCursor)
-        }
-      })
-      .catch(console.error)
-  }
-  return fetchPages();
-}
-
-const getBranches = (accessToken, repo, reply) => {
-  const client = new GraphQLClient(API_URL, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-
-  const branches = [];
-
-  const query = `{
-      viewer {
-        repository(name: "${repo}") {
-          refs(first: 30, refPrefix:"refs/heads/") {
-            edges {
-              node {
-                name
-              }
-            }
-          }
-        }
-      }
-    }`;
-
-  client.request(query)
-    .then(data => {
-      const { edges } = data.viewer.repository.refs;
-      edges.forEach(edge => branches.push(edge.node));
-      reply({branches});
-    })
-    .catch(console.error)
 }
 
 module.exports = Github;

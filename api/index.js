@@ -1,6 +1,7 @@
-'use strict'
+const github = require('./github');
+
 let api = {
-   github:  require('./github')
+   github
 }
 
 module.exports = api

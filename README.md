@@ -49,6 +49,10 @@ repositories(first: 30, after: ${endCursor}, affiliations: OWNER)
 
 `GET /github/repo-branches`
 
+Payload:
+
+* repo `(String)`: Repository name
+
 Makes GitHub GraphQL query
 
 ```
@@ -65,9 +69,28 @@ viewer {
 }
 ```
 
-#### 5. Create repo webhook
+#### 5. Download .tar file
+
+`POST /github/repo-download`
+
+Payload:
+
+* username `(String)`: Repository owner's username
+* repo `(String)`: Repository name
+
+Download .tar file located at
+
+`https://api.github.com/repos/${username}/${repo}/tarball`
+
+#### 6. Create repo webhook
 
 `POST /github/create-hook`
+
+Payload:
+
+* username `(String)`: Repository owner's username
+* repo `(String)`: Repository name
+* url `(String)`: URL to ping on repository changes
 
 Request GitHub api to create webhook.
 
@@ -88,9 +111,13 @@ fetch(`https://api.github.com/repos/${USERNAME}/${REPOSITORY}/hooks`, {
   })
 ```
 
-#### 6. Delete repo webhook
+#### 7. Delete repo webhook
 
-`DELETE /github/delete-hook`
+`DELETE /github/delete-hook/{id}`
+
+Params:
+
+* id `(Number)`: Webhook id
 
 Request GitHub api to delete webhook.
 
